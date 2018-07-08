@@ -3,8 +3,27 @@ Consider the requirements to prevent overpopulation (#interactions, rewards, har
 Limit number of interactions per player
     internally or externally? Internally if I can
 Graphical representation of current game state
+
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_axes([0,0,1,1])
+
+        for ID in unique_ID_list:
+            players_with_this_ID = [p for p in players if p.get_ID()==ID]
+            sample_player_with_this_ID[ID] = players_with_this_ID[0]
+            locations = [p.get_location() for p in players_with_this_ID]
+            rewards = [p.get_current_reward() for p players_with_this_ID]
+            marker_list_ID = ID % len(marker_list)
+            ax.scatter(x=locations[:,0),y=locations[:,1],s=rewards, marker=marker_list[marker_list_ID], alpha=0.3, edgecolors=edge_color_list[marker_list_ID])
+
+        leg_str = [sample_player_with_this_ID[ID].strategy.get_description() for ID in unique_ID_list]
+        ax.legend(leg_str, loc='best')
+
+        plt.show()
+
 Save a history of the plays. Need to understand / visualize how the dynamics work (why do some strategies survive?)
 
+Some kind of profiling - which part is taking sooo long?
 
 
 Iterated prisoner's dilemma with infinite horizon:
