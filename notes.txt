@@ -1,0 +1,258 @@
+Next:
+Consider the requirements to prevent overpopulation (#interactions, rewards, harvest and feed values)
+Limit number of interactions per player
+    internally or externally? Internally if I can
+Graphical representation of current game state
+Save a history of the plays. Need to understand / visualize how the dynamics work (why do some strategies survive?)
+
+
+
+Iterated prisoner's dilemma with infinite horizon:
+
+    Main:
+        rewards_matrix = [[0,5],[-5,3]]
+        awareness_range = 0.1
+        players_eye_for_an_eye = [Player(ID, rewards_matrix, StrategyEyeForAnEye, np.random.rand(2), awareness_range) for ID in range(0,100)]
+        players_saints = [Player(ID, rewards_matrix, StrategySaint, np.random.rand(2), awareness_range) for ID in range(100,200)]
+        players_jerks = [Player(ID, rewards_matrix, StrategyJerk, np.random.rand(2), awareness_range) for ID in range(200,300)]
+        players_random = [Player(ID, rewards_matrix, StrategyRandom, np.random.rand(2), awareness_range) for ID in range(300,400)]
+
+
+
+	Game holds:
+
+		members:
+		    RM (rewards matrix) - 2x2
+		    land_harvest_rate
+            active_players (list - external input)
+		    dead_players (list - generated during the game)
+
+		methods:
+		    init:
+		        input: RM, players_list, land_harvest_rate (add these to self.*)
+
+	    # Game repeats the: [Pair, Play(w/ instant thresholds), harvest+eat, update (w/ regular thresholds), move] sequence until:
+
+            add_new_player(player)
+                generates a new ID and adds the player to the players list. Will be called from either play_all_pairs or die_and_spawn
+
+            player_is_dead(player)
+                pops player out of the players list (will players.pop(player) work? We'll see) and add it to the dead_players list
+
+
+            build_pairs()
+            play_all_pairs()
+            harvest_and_eat()
+            die_and_spawn()
+            move_players()
+                build_neighbors_list()
+
+            run_one_generation - does all the above
+
+            show_population()
+                w/o graphics: a sorted list (descending, sorted by # of players) of: [ID, #of players]
+                with graphics:
+                    dead players are a grey circle
+                    living players are a colored, filled circle with color matching the ID (somehow)
+                    radius is proportional to current reward. Inversely proportional to total number of players
+                        consider: radius = current_reward / sum(all_active_player_rewards)
+
+	Players have:
+
+		members:
+
+            ID
+            is_alive
+            PD rewards matrix (inits from Game. Ideally equal in all players but not necessarily)
+            reward score (inits to a value defined by TBD)
+            location (x,y) - in [0,1]x[0,1]
+            awareness range (radius of sight around player)
+            thresholds for death / spawn / instant_death=-INF / instant_spawn=INF
+            harvest_radius (constant. Maybe something like 2*pi*R^2=0.01 --> R==sqrt(0.01/2pi))
+            food_requirement
+
+            movement+play strategy (which can hold state) - object of class strategy_class (created during init)
+
+
+		methods:
+
+            init(ID, rewards_matrix, strategy_class, location, awareness_range):
+                is_alive = True
+                location = location
+                play_strategy = play_strategy_class(ID, rewards_matrix)
+                movement_strategy = movement_strategy_class(ID, rewards_matrix)
+
+
+            get_player_game_state:
+                input: none
+                output: dictionary of several of Player's data members, which will be passed to the play() function:
+                    current_reward_score
+                    thresholds ['death','spawn','instant_death','instant_spawn']
+
+            get_location:
+                return location
+
+            get_awareness_range:
+                return awareness_range
+
+            is_alive:
+                input: none
+                output: True if alive, False if dead
+
+            harvest:
+                input: reward
+                adds reward to current_reward_score
+
+            feed:
+                input: none
+                subtracts food_requirements from current_reward_score
+
+            play:
+                inputs: opponent's ID, player_game_state
+                output: decision (cooperate = 1, betray = 0)
+                runs play_strategy.play() with inputs, returns the output
+
+            update:
+                inputs: opponent's ID, player's decision, opponent's decision, player_game_state
+                    updates current reward - adds the RM's result for decision pair to player's reward score
+                    runs play_strategy.update() with inputs
+                    runs check_thresholds with instant_death / instant_spawn
+                        --> returns either None (no change), 0 (instant death) or a new Player object (instant spawn)
+
+            die:
+                is_alive = False
+                return 0
+
+            spawn_player:
+                new_player = copy(self)
+
+            spawn:
+                rewards_score /= 2
+                spawned_player = self.spawn_player()
+                return spawned_player
+
+			check_thresholds(death_th, spawn_th):
+			    (using death/spawn by default, but can be used with instant_death/instant_spawn after each reward update)
+			    returns:
+			        None if no change
+			        die() if death
+			        new_player if spawn
+
+			move(neighbors):
+			    updates location using strategy.move(neighbors)
+			    returns location
+
+
+    Strategy
+        Note: will be defined using a parent class and specific sub-classes.
+
+        members:
+            my_ID: ID of player using this strategy
+            states: dictionary with [player IDs] as keys, and a state for each key
+            description
+
+        methods:
+
+            init(my_ID,RM,location,awareness_range, description = 'description'):
+                my_ID = my_ID
+                description = description
+                RM = RM
+                my_location = location
+                awareness_range = awareness_range
+                should run init_self_ID_state()
+
+            init_self_ID_state(): create a new state for the player's ID
+
+            add_new_ID(ID): create a new state for key [ID],
+
+            play:
+                input: opponent's ID
+                output: decision (0=betray, 1=cooperate)
+
+                If ID does not exist, add_new_ID(ID).
+                return get_decision(states[ID])
+                Note: for now, play() should NOT alter the state. Only update() will do that
+
+            get_decision(state):
+                Core decision function. Uses current opponent state to decide action
+
+            update:
+                input: opponent's ID, player's decision, opponent's decision
+                output: None
+                updates states[ID] per match inputs and result
+
+            move():
+                input:
+                    neighbors_list - list of {'location': loc, 'ID': ID} pairs for all neighbors within awareness_range
+                process:
+                    update location based on neighbors_list
+                output:
+                    returns new location
+
+
+
+	Game pairs adjacent players, and lets each pair play PD: 
+		Player's input: opponent's ID, PD rewards matrix
+		Game informs each player of the opponent's choice and rewards the player.
+
+	After each individual play, when player is rewarded, the reward score is updated and the instant_death/instant_spawn thresholds are checked.
+
+	After each play stage, a harvest + eat stage is performed:
+		Each player harvests - gets an additional reward of land_harvest_rate / number of neighbors in harvest_radius
+		Each player eats - loses food_requirement from current reward
+
+	Death/spawn thresholds are checked:
+		If death - player dies. Game will still hold it in memory but will not pair it with other players
+		If spawn - reward score is halved.
+		            Player runs .spawn() to create a new player object with (possibly) identical properties + small random offset to location.
+		            This new player object is returned to Game to add to the players list
+
+
+	A move stage is performed:
+		Each player receives a list of neighbors within its awareness range, and updates its location based on the movement strategy
+			Optional - farther movement lowers the reward score
+			Consider - world is a torus (i.e. locations wrap around edges)
+
+
+
+
+Notes:
+
+Learn how to draw plots
+
+Make sure that dual-trust reward is less than the food requirement (otherwise a nice population might explode)
+Display:
+	Pair each ID with a color+marker (e.g. red-triangle, blue-square, etc.)
+	draw each marker with a size proportional to current reward score
+	draw dead markers with grey color and size 4 (or something similar)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MATLAB approach for calculating distances:
+        num_of_active_players = self.get_number_of_active_players()
+
+        locations = [p.get_location() for p in self.active_players]
+        x_pos = ml.repmat(locations[:,0],1,num_of_active_players)
+        y_pos = ml.repmat(locations[:,1],1,num_of_active_players)
+        dx = x_pos - x_pos.transpose()
+        dy = y_pos - y_pos.transpose()
+        d = np.sqrt(dx*dx + dy*dy)
+
+        eff_radii = [p.get_effective_radius() for p in self.active_players]
+        err_radii_rep = ml.repmat(eff_radii,1,num_of_active_players)
+        min_radii_matrix = min(err_radii_rep, err_radii_rep.transpose())
+
+        valid_distance = d<=min_radii_matrix
