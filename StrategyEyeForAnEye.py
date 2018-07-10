@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import numpy as np
+import move_strategies
 from StrategyBase import StrategyBase
 
 
@@ -10,7 +11,7 @@ class StrategyEyeForAnEye(StrategyBase):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.description = "Strategy - Eye for an eye - repeats the opponent's previous move"
+        self.description = "Eye for an eye - repeats the opponent's previous move"
 
         self.init_self_ID_state() # Initialize the "states" member using the same ID as this object.
 
@@ -36,16 +37,12 @@ class StrategyEyeForAnEye(StrategyBase):
 
     # CORE COMPONENT - how the location is updated based on all neighbors in the effective range. Returns the updated location
     def move_to_new_location(self, location, visible_neighbor_locations):
-        num_of_neighbors = len(visible_neighbor_locations)
 
-        if num_of_neighbors == 0:
-            new_location = location
-        else:
-            neighbors_cm = sum(visible_neighbor_locations)/num_of_neighbors
-            d = location - neighbors_cm
-            new_location = location + 0.1*d # Move away from neighbors
+        return move_strategies.push_model(location, visible_neighbor_locations)
+        # return move_strategies.push_and_pull_model(location, visible_neighbor_locations)
+        # return move_strategies.move_towards_all_other_players(location, visible_neighbor_locations)
 
-        return new_location
+
 
 
 ############################################################################

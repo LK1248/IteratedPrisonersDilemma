@@ -1,5 +1,5 @@
 import numpy as np
-from copy import copy
+from copy import copy, deepcopy
 
 class Player:
 
@@ -16,8 +16,6 @@ class Player:
     #
     # movement+play strategy (which can hold state) - object of class strategy_class (created during init)
 
-    inf = 1e6
-
     def __init__(self,  ID,
                         rewards_matrix,
                         strategy_class,
@@ -25,9 +23,9 @@ class Player:
                         reward_score=0,
                         thresholds={'death':0,
                                     'spawn':100,
-                                    'instant_death':-inf,
-                                    'instant_spawn':inf},
-                        effective_radius=inf,
+                                    'instant_death':-np.inf,
+                                    'instant_spawn':np.inf},
+                        effective_radius=np.inf,
                         food_requirement=10):
         self.ID                 = ID
         self.rewards_matrix     = rewards_matrix
@@ -64,12 +62,15 @@ class Player:
         #     return effective_radius
         return self.effective_radius
 
-    def can_see_player(self, other_player):
-        # Determines whether another player is visible to this player
+    def distance_to_player(self, other_player):
         other_player_location = other_player.get_location()
         my_location = self.get_location()
         distance = np.linalg.norm(other_player_location - my_location)
-        return distance <= self.effective_radius
+        return distance
+
+    def can_see_player(self, other_player):
+        # Determines whether another player is visible to this player
+        return self.distance_to_player(other_player) <= self.effective_radius
 
     def is_alive(self):
         # is_alive:
@@ -79,6 +80,9 @@ class Player:
 
     def add_reward(self, new_reward):
         self.reward_score += new_reward
+
+    def get_current_reward(self):
+        return self.reward_score
 
     def harvest(self,harvest_reward):
         # harvest:
@@ -154,9 +158,9 @@ class Player:
     def spawn_player(self):
         # spawn_player:
         #     new_player = copy(self)
-        new_player = copy(self)
+        new_player = deepcopy(self)
+        new_player.location += np.random.rand(2)/1000
         return new_player
-
 
     def spawn(self):
         # spawn:

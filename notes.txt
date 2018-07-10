@@ -1,29 +1,43 @@
 Next:
+
+Add a stress penalty - reduces reward based on max(0,#neighbors - tolerance_level) ** 2 or something
+
+draw a circle around each player with effective_range radius (yellow with alpha=0.1, or linewidth=0.1)
+
+Add a personal, unique ID in addition to the global ID (so the ID will be like a (race,name) tuple
+
 Consider the requirements to prevent overpopulation (#interactions, rewards, harvest and feed values)
-Limit number of interactions per player
-    internally or externally? Internally if I can
-Graphical representation of current game state
 
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_axes([0,0,1,1])
+    can_overpopulate_wo_harvest = max_plays_per_generation * RM(Cooperation,Cooperation) > food requirement
+    then overpopulation can occur
 
-        for ID in unique_ID_list:
-            players_with_this_ID = [p for p in players if p.get_ID()==ID]
-            sample_player_with_this_ID[ID] = players_with_this_ID[0]
-            locations = [p.get_location() for p in players_with_this_ID]
-            rewards = [p.get_current_reward() for p players_with_this_ID]
-            marker_list_ID = ID % len(marker_list)
-            ax.scatter(x=locations[:,0),y=locations[:,1],s=rewards, marker=marker_list[marker_list_ID], alpha=0.3, edgecolors=edge_color_list[marker_list_ID])
+    harvest_area = pi * effective_range^2
+    is_sustainable = max(N * RM(Cooperation,Cooperation) + harvest_rate*harvest_area / N)  > food requirement
+                       for any N in [1,max_plays_per_generation]
 
-        leg_str = [sample_player_with_this_ID[ID].strategy.get_description() for ID in unique_ID_list]
-        ax.legend(leg_str, loc='best')
+Consider constraints which enforce a limited, sustainable population on limited area, and on unlimited area
 
-        plt.show()
+Move strategy:
+    MAKE THE WORLD A TORUS! OR PUSH AWAY FROM THE BORDERS SOMEHOW
+    Don't move away from all players - find some balance between isolation and cooperation
+    Move towards "nice" players (somehow)
+    find the point with the maximal minimal distance to all visible neighbors
 
 Save a history of the plays. Need to understand / visualize how the dynamics work (why do some strategies survive?)
 
 Some kind of profiling - which part is taking sooo long?
+
+
+DONE:
+
+update the legend with current number of players for each strategy
+
+Limit number of interactions per player
+    internally or externally? Internally if I can
+
+Graphical representation of current game state
+    Why do I need to close the figure?
+    Can the figure stay in the same place?
 
 
 Iterated prisoner's dilemma with infinite horizon:

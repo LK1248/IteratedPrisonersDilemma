@@ -1,6 +1,8 @@
 import numpy as np
 from Player import Player
 import random
+import move_strategies
+
 
 class StrategyBase:
 #    Strategy
@@ -66,6 +68,8 @@ class StrategyBase:
 ########################## CORE COMPONENTS #################################
 ############################################################################
 
+    def get_description(self):
+        return self.description
 
     def init_self_ID_state(self):
         # init_self_ID_state(): create a new state for the player's ID

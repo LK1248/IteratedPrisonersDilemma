@@ -2,6 +2,7 @@ import numpy as np
 import random
 import numpy as np
 from StrategyBase import StrategyBase
+import move_strategies
 
 
 class StrategyRandom(StrategyBase):
@@ -9,7 +10,7 @@ class StrategyRandom(StrategyBase):
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.description = "Strategy - Random - chooses randomly w.p. 1/2 between betray and cooprate"
+        self.description = "Random - chooses randomly w.p. 1/2 between betray and cooperate"
 
         self.init_self_ID_state() # Initialize the "states" member using the same ID as this object.
 
@@ -36,18 +37,9 @@ class StrategyRandom(StrategyBase):
 
     # CORE COMPONENT - how the location is updated based on all neighbors in the effective range. Returns the updated location
     def move_to_new_location(self, location, visible_neighbor_locations):
-        num_of_neighbors = len(visible_neighbor_locations)
-
-        if num_of_neighbors == 0:
-            new_location = location
-        else:
-            neighbors_cm = sum(visible_neighbor_locations)/num_of_neighbors
-            d = location - neighbors_cm
-            new_location = location + random.randint(0,10)/10*d
-
-        return new_location
-
-
+        return move_strategies.push_model(location, visible_neighbor_locations)
+        # return move_strategies.push_and_pull_model(location, visible_neighbor_locations)
+        # return move_strategies.move_towards_all_other_players(location, visible_neighbor_locations)
 
 ############################################################################
 ########################## CORE COMPONENTS #################################
