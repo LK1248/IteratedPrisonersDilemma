@@ -14,6 +14,7 @@ class Game:
                  players_list,
                  land_harvest_rate,
                  max_plays_per_generation=np.inf,
+                 bounding_box_plot_fun=lambda :[],
                  show_output = True):
 
         # Game holds:
@@ -33,6 +34,7 @@ class Game:
         self.show_output                = show_output
 
         self.graphics                   = {}
+        self.bounding_box_plot_fun      = bounding_box_plot_fun
 
         self.current_generation         = 0
 
@@ -234,17 +236,21 @@ class Game:
                        s=rewards * 10,
                        marker=marker_list[marker_list_ID],
                        alpha=0.3,
+                       facecolors=edge_color_list[marker_list_ID],
                        edgecolors=edge_color_list[marker_list_ID],
                        )
 
-        ax.set_xlim([-10,10])
-        ax.set_ylim([-10,10])
+        ax.set_xlim([-6,6])
+        ax.set_ylim([-6,6])
         ax.set_title(f"Generation #{self.current_generation}")
 
 
         leg_str = [f"{number_of_players_with_this_ID[ID]} - {sample_player_with_this_ID[ID].strategy.get_description()}" for ID in unique_IDs]
         ax.legend(leg_str, loc='upper center', bbox_to_anchor=(0.5, 1.45),
           ncol=1, fancybox=True, shadow=True)
+
+        rect = self.bounding_box_plot_fun()
+        ax.add_patch(rect)
 
         plt.pause(0.1)
 

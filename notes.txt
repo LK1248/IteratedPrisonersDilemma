@@ -1,10 +1,9 @@
 Next:
 
-Add a stress penalty - reduces reward based on max(0,#neighbors - tolerance_level) ** 2 or something
+history plot of some kind (total reward per group ID)
 
 draw a circle around each player with effective_range radius (yellow with alpha=0.1, or linewidth=0.1)
 
-Add a personal, unique ID in addition to the global ID (so the ID will be like a (race,name) tuple
 
 Consider the requirements to prevent overpopulation (#interactions, rewards, harvest and feed values)
 
@@ -23,12 +22,17 @@ Move strategy:
     Move towards "nice" players (somehow)
     find the point with the maximal minimal distance to all visible neighbors
 
-Save a history of the plays. Need to understand / visualize how the dynamics work (why do some strategies survive?)
 
 Some kind of profiling - which part is taking sooo long?
 
 
 DONE:
+
+Add a personal, unique ID in addition to the global ID (so the ID will be like a (race,name) tuple
+
+Save a history of the plays. Need to understand / visualize how the dynamics work (why do some strategies survive?)
+
+Add a stress penalty - reduces reward based on max(0,#neighbors - tolerance_level) ** 2 or something
 
 update the legend with current number of players for each strategy
 

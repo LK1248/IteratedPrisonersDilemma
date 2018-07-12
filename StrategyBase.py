@@ -20,13 +20,11 @@ class StrategyBase:
                     private_ID       = None,
                     RM               = [[0,0],[0,0]],
                     location         = np.array([0,0]),
-                    effective_radius = np.inf,
                     description      = 'Basic strategy'):
         self.my_ID              = ID
         self.my_private_ID      = private_ID
         self.RM                 = RM
         self.my_location        = location
-        self.effective_radius   = effective_radius
         self.description        = description
 
         self.init_self_ID_state() # Initialize the "states" member using the same ID as this object.
@@ -53,7 +51,7 @@ class StrategyBase:
 
 
     # CORE COMPONENT - how the location is updated based on all neighbors in the effective range. Returns the updated location
-    def move_to_new_location(self, location, visible_neighbor_locations):
+    def move_to_new_location(self, location, visible_neighbor_locations, effective_radius=np.inf):
 
         num_of_neighbors = len(visible_neighbor_locations)
 
@@ -110,7 +108,7 @@ class StrategyBase:
         self.states[opponent_ID] = state
 
 
-    def move(self, game_state, visible_neighbor_locations):
+    def move(self, game_state, visible_neighbor_locations, effective_radius):
         # move():
         #     input:
         #         neighbors_list - list of {'location': loc, 'ID': ID} pairs for all neighbors within effective_radius
@@ -123,5 +121,5 @@ class StrategyBase:
 
         location = game_state['location']
 
-        new_location = self.move_to_new_location(location, visible_neighbor_locations)
+        new_location = self.move_to_new_location(location, visible_neighbor_locations, effective_radius)
         return new_location

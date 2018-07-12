@@ -206,7 +206,7 @@ class Player:
         visible_neighbor_locations = self.prepare_wrap_method(visible_neighbor_locations)
 
         my_game_state = self.get_player_game_state()
-        new_location = self.strategy.move(my_game_state, visible_neighbor_locations)
+        new_location = self.strategy.move(my_game_state, visible_neighbor_locations, self.effective_radius)
 
         # Apply wrap-around (if active) or bound-box.
         # In practice, only one has effect (wrap around forces points inside the bounding box)

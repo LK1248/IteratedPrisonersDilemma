@@ -36,10 +36,10 @@ class StrategyEyeForAnEye(StrategyBase):
 
 
     # CORE COMPONENT - how the location is updated based on all neighbors in the effective range. Returns the updated location
-    def move_to_new_location(self, location, visible_neighbor_locations):
+    def move_to_new_location(self, location, visible_neighbor_locations, effective_radius=np.inf):
 
-        return move_strategies.push_model(location, visible_neighbor_locations)
-        # return move_strategies.push_and_pull_model(location, visible_neighbor_locations)
+        # return move_strategies.push_model(location, visible_neighbor_locations)
+        return move_strategies.push_and_pull_model(location, visible_neighbor_locations, effective_radius)
         # return move_strategies.move_towards_all_other_players(location, visible_neighbor_locations)
 
 
