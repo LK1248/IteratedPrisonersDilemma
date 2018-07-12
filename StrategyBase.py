@@ -17,15 +17,17 @@ class StrategyBase:
 
     def __init__(self,
                     ID               = None,
+                    private_ID       = None,
                     RM               = [[0,0],[0,0]],
                     location         = np.array([0,0]),
                     effective_radius = np.inf,
                     description      = 'Basic strategy'):
-        self.my_ID = ID
-        self.RM = RM
-        self.my_location = location
-        self.effective_radius = effective_radius
-        self.description = description
+        self.my_ID              = ID
+        self.my_private_ID      = private_ID
+        self.RM                 = RM
+        self.my_location        = location
+        self.effective_radius   = effective_radius
+        self.description        = description
 
         self.init_self_ID_state() # Initialize the "states" member using the same ID as this object.
 
@@ -73,7 +75,7 @@ class StrategyBase:
 
     def init_self_ID_state(self):
         # init_self_ID_state(): create a new state for the player's ID
-        states = {self.my_ID : self.init_state()}
+        states = {self.my_private_ID : self.init_state()}
         self.states = states
 
     def add_new_ID(self,ID):
@@ -116,6 +118,10 @@ class StrategyBase:
         #         update location based on neighbors_list
         #     output:
         #         returns new location
+
+
+
         location = game_state['location']
+
         new_location = self.move_to_new_location(location, visible_neighbor_locations)
         return new_location

@@ -6,9 +6,15 @@ from copy import copy
 from Player import Player
 import numpy.matlib as ml
 
+
 class Game:
 
-    def __init__(self, RM, players_list, land_harvest_rate, max_plays_per_generation=np.inf, show_output = True):
+    def __init__(self,
+                 RM,
+                 players_list,
+                 land_harvest_rate,
+                 max_plays_per_generation=np.inf,
+                 show_output = True):
 
         # Game holds:
         #
@@ -29,6 +35,8 @@ class Game:
         self.graphics                   = {}
 
         self.current_generation         = 0
+
+        self.record                     = []
 
         self.decision_names = ['Betray', 'Cooperate']
 
@@ -134,6 +142,7 @@ class Game:
             player.harvest(harvested_reward)
             # self.handle_output(f"player has {num_of_visible_neighbors} neighbors, harvests {harvested_reward}")
             player.feed()
+            player.stress(num_of_visible_neighbors)
 
     def die_and_spawn(self):
         # Check current reward vs. spawn / death thresholds for all players.
@@ -171,6 +180,7 @@ class Game:
         self.harvest_and_eat()
         self.die_and_spawn()
         self.move_players()
+        self.record_generation()
 
         self.current_generation += 1
 
@@ -178,6 +188,17 @@ class Game:
 
         return self.current_population_size()
 
+
+    def total_reward_per_ID(self):
+        population_IDs = [p.get_ID() for p in self.active_players]
+        unique_IDs = list(set(population_IDs))
+        reward_per_ID = {id:sum([p.get_current_reward() for p in self.active_players if p.get_ID()==id]) for id in unique_IDs}
+        return reward_per_ID
+
+    def record_generation(self):
+        self.record += [{'active_players' : self.active_players,
+                         'dead_players'   : self.dead_players,
+                         'reward_per_ID'  : self.total_reward_per_ID()}]
 
     def show_status_graphically(self):
         # Graphical representation - move this to a function
@@ -196,17 +217,17 @@ class Game:
         marker_list = ['d', '+', 'o', '.', 's']
         edge_color_list = ['b', 'r', 'g', 'y', 'k', 'c']
 
-        population_IDs = [p.get_ID() for p in self.active_players]
+        population_IDs = [p.get_type_ID() for p in self.active_players]
         unique_IDs = list(set(population_IDs))
 
         sample_player_with_this_ID = {}
         number_of_players_with_this_ID = {}
         for ID in unique_IDs:
-            players_with_this_ID = [p for p in self.active_players if p.get_ID() == ID]
-            sample_player_with_this_ID[ID] = players_with_this_ID[0]
-            number_of_players_with_this_ID[ID] = len(players_with_this_ID)
-            locations = np.array([p.get_location() for p in players_with_this_ID])
-            rewards = [p.get_current_reward() for p in players_with_this_ID]
+            players_with_this_type_ID = [p for p in self.active_players if p.get_type_ID() == ID]
+            sample_player_with_this_ID[ID] = players_with_this_type_ID[0]
+            number_of_players_with_this_ID[ID] = len(players_with_this_type_ID)
+            locations = np.array([p.get_location() for p in players_with_this_type_ID])
+            rewards = [p.get_current_reward() for p in players_with_this_type_ID]
             marker_list_ID = ID % len(marker_list)
             ax.scatter(x=locations[:, 0],
                        y=locations[:, 1],
